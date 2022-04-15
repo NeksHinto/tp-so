@@ -7,7 +7,7 @@ all:
 	gcc -Wall -o application application.c -lrt -pthread
 	
 clean:
-	rm application worker view include
+	rm application worker view
 	rm ./output_application
 	rm /dev/shm/shm_obj
 

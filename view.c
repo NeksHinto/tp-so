@@ -3,10 +3,12 @@
 
 #include "view.h"
 
-int main(void){ // Idea de: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
+int main(void)
+{ // Idea de: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
         int fd_share_memory;
         char *pointer;
         struct stat share_memory_obj_st;
+        char *aux_pointer;
 
         sem_t *sem_r_share_memory = sem_open(SEMAPHORE_NAME, O_CREAT);
         if (SEM_FAILED == sem_r_share_memory)
@@ -24,9 +26,10 @@ int main(void){ // Idea de: https://github.com/WhileTrueThenDream/ExamplesCLinux
                 // abort();
                 exit(-1);
         }
-        
+
         // open s.m object
-        while (-1 == (fd_share_memory = shm_open(SHARED_MEMORY_OBJ_NAME, O_RDONLY, 00400)));
+        while (-1 == (fd_share_memory = shm_open(SHARED_MEMORY_OBJ_NAME, O_RDONLY, 00400)))
+                ;
 
         if (-1 == fstat(fd_share_memory, &share_memory_obj_st))
         {
@@ -71,7 +74,8 @@ int main(void){ // Idea de: https://github.com/WhileTrueThenDream/ExamplesCLinux
         printf("\n ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
         printf("VIEW Process: all solutions printed\n\n");
 
-        if(sem_close(sem_r_share_memory) < 0){
+        if (sem_close(sem_r_share_memory) < 0)
+        {
                 printf(ERROR_TEXT);
                 perror("SEM close");
                 exit(-1);
@@ -85,4 +89,13 @@ int main(void){ // Idea de: https://github.com/WhileTrueThenDream/ExamplesCLinux
         }
         close(fd_share_memory);
         return 0;
+}
+
+void clean_buffer(char *buffer)
+{
+        int j = 0;
+        while (buffer[j] != '\0')
+        {
+                buffer[j++] = '\0';
+        }
 }
