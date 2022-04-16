@@ -26,7 +26,7 @@
 
 #define PROCESSES_COUNT 5
 #define INITIAL_FILES_COUNT 2
-#define ERROR_TEXT "ERROR, in Application - "
+#define ERROR_TEXT "ERROR in Application: "
 
 int fd_work[PROCESSES_COUNT][2];    // PIPE master --> slave
 int fd_results[PROCESSES_COUNT][2]; // PIPE slave --> master

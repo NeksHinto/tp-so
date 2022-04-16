@@ -36,16 +36,28 @@ int main(int argc, char const *argv[])
                                 int len = sprintf(cmd, "PID: %d | Solucion de: %s | ", getpid(), buffer_aux);
                                 if (len < 0)
                                 {
+                                        printf("PID: %d | ", getpid());
+                                        printf(ERROR_TEXT);
+                                        perror("sprintf\n");
+                                        abort();
                                 }
 
                                 FILE *fp = popen(param, "r");
                                 if (fp == NULL)
                                 {
+                                        printf("PID: %d | ", getpid());
+                                        printf(ERROR_TEXT);
+                                        perror("popen\n");
+                                        abort();
                                 }
                                 fgets(&cmd[len], BUFFER_SIZE, fp); // Validar que no retorne NULL ?
                                 int status = pclose(fp);
                                 if (status < 0)
                                 {
+                                        printf("PID: %d | ", getpid());
+                                        printf(ERROR_TEXT);
+                                        perror("pclose\n");
+                                        abort();
                                 }
                                 printf("%s \n", cmd);
                                 clean_buffer(cmd);

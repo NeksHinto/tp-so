@@ -12,7 +12,7 @@
 
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
 #define SIZEOF_RESPONSE 150
-#define ERROR_TEXT "ERROR, in View - "
+#define ERROR_TEXT "ERROR in View: "
 #define SEMAPHORE_NAME "semaphore1"
 
 void clean_buffer(char *buffer);

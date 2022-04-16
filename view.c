@@ -49,7 +49,7 @@ int main(void)
         int files = (int)atoi(aux_pointer);
         aux_pointer += sizeof(files);
         printf("\n");
-        printf("VIEW Process: %d to print\n", files);
+        printf("VIEW Process: %d solutions for printing\n", files);
         printf("\n ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
         ans = 0;
 
@@ -72,19 +72,19 @@ int main(void)
                 clean_buffer(buffer);
         }
         printf("\n ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
-        printf("VIEW Process: all solutions printed\n\n");
+        printf("VIEW Process: all solutions were printed correctly\n\n");
 
         if (sem_close(sem_r_share_memory) < 0)
         {
                 printf(ERROR_TEXT);
-                perror("SEM close");
+                perror("sem_close");
                 exit(-1);
         }
 
         if (munmap(pointer, share_memory_obj_st.st_size) < 0)
         {
                 printf(ERROR_TEXT);
-                perror("munmap share memory");
+                perror("munmap");
                 exit(-1);
         }
         close(fd_share_memory);
