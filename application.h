@@ -28,7 +28,7 @@
 #define INITIAL_FILES_COUNT 2
 #define ERROR_TEXT "ERROR in Application: "
 
-int fd_work[PROCESSES_COUNT][2];    // PIPE master --> slave
+int fd_works[PROCESSES_COUNT][2];    // PIPE master --> slave
 int fd_results[PROCESSES_COUNT][2]; // PIPE slave --> master
 int flags_fd_work_open[PROCESSES_COUNT];
 int processes[PROCESSES_COUNT];
@@ -37,6 +37,7 @@ int files_count_to_send = 0;
 int files_count_resolved = 0;
 char *pointer_sh_mem;
 char *aux_pointer_sh_mem;
+int res_processes[PROCESSES_COUNT];
 
 // Validacion del tipo de archivo
 void check_format(int files_count, const char *files[], char *format);

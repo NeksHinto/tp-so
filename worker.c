@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
                                         printf("PID: %d | ", getpid());
                                         printf(ERROR_TEXT);
                                         perror("sprintf\n");
-                                        abort();
+                                        exit(EXIT_FAILURE);
                                 }
 
                                 FILE *fp = popen(param, "r");
@@ -48,7 +48,7 @@ int main(int argc, char const *argv[])
                                         printf("PID: %d | ", getpid());
                                         printf(ERROR_TEXT);
                                         perror("popen\n");
-                                        abort();
+                                        exit(EXIT_FAILURE);
                                 }
                                 fgets(&cmd[len], BUFFER_SIZE, fp); // Validar que no retorne NULL ?
                                 int status = pclose(fp);
@@ -57,7 +57,7 @@ int main(int argc, char const *argv[])
                                         printf("PID: %d | ", getpid());
                                         printf(ERROR_TEXT);
                                         perror("pclose\n");
-                                        abort();
+                                        exit(EXIT_FAILURE);
                                 }
                                 printf("%s \n", cmd);
                                 clean_buffer(cmd);
