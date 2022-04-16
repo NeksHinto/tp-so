@@ -67,6 +67,12 @@ int main(int argc, char const *argv[])
         files_count_to_send -= INITIAL_FILES_COUNT;
     }
 
+    int nfds = 0;
+    fd_set fd_workers;
+    while ((argc - 1) > files_count_resolved)
+    {
+        reinitialize_fd_set(&nfds, &fd_workers);
+    }
     return 0;
 }
 
@@ -197,4 +203,28 @@ void concat_files(int files_count, const char *files[], char concat[])
         strcat(concat, files[i]);
         strcat(concat, "\n");
     }
+}
+
+void reinitialize_fd_set(int *nfds, fd_set *fd_workers)
+{
+
+    int aux_nfds = 0;
+
+    fd_set aux_fd_workers;
+    FD_ZERO(&fd_workers); // clears (removes all file descriptors from) set
+
+    for (int i = 0; i < PROCESSES_COUNT; i++)
+    {
+        if (flags_fd_work_open[i] != 0)
+        {
+            FD_SET(fd_sols[i][0], &fd_workers); // adds the file descriptor fd to set
+            if (fd_sols[i][0] > aux_nfds)
+            {
+                aux_nfds = fd_sols[i][0] + 1;
+            }
+        }
+    }
+
+    *nfds = aux_nfds;
+    *fd_workers = aux_fd_workers;
 }

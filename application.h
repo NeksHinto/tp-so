@@ -52,4 +52,5 @@ void create_slaves();
 
 void concat_files(int files_count, const char *files[], char concat[]);
 
+void reinitialize_fd_set(int *nfds, fd_set *fd_workers)
 #endif
