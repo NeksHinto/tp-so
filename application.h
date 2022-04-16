@@ -27,9 +27,10 @@
 #define PROCESSES_COUNT 5
 #define INITIAL_FILES_COUNT 2
 #define ERROR_TEXT "ERROR in Application: "
+#define SEPARATOR "-------------------\n"
 
-int fd_works[PROCESSES_COUNT][2];    // PIPE master --> slave
-int fd_results[PROCESSES_COUNT][2]; // PIPE slave --> master
+int fd_works[PROCESSES_COUNT][2];   // PIPE from application to worker
+int fd_results[PROCESSES_COUNT][2]; // PIPE from worker to application
 int flags_fd_work_open[PROCESSES_COUNT];
 int processes[PROCESSES_COUNT];
 int offset_args = 1;
@@ -53,5 +54,6 @@ void create_slaves();
 
 void concat_files(int files_count, const char *files[], char concat[]);
 
-void reinitialize_fd_set(int *nfds, fd_set *fd_workers)
+void reinitialize_fd_set(int *nfds, fd_set *fd_workers);
+
 #endif

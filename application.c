@@ -67,50 +67,115 @@ int main(int argc, char const *argv[])
         files_count_to_send -= INITIAL_FILES_COUNT;
     }
 
-<<<<<<< HEAD
     int nfds = 0;
     fd_set fd_workers;
+
     while ((argc - 1) > files_count_resolved)
     {
-        reinitialize_fd_set(&nfds, &fd_workers);
-    }
-=======
-    // ahora tenemos que armar la logica del padre para leer y mandar tareas a los hijos
-    fd_set fd_workers;
-
-
-    while ((argc - 1) > files_count_resolved) 
-    {
         char buf[BUFFER_SIZE] = {'\0'};
-        
-        // tenermos que preparar el select para despues hacerlo
 
-        int select_ans; // aca hariamos el select
+        reinitialize_fd_set(&nfds, &fd_workers);
 
-        if (select_ans < 0) 
+        int select_ans = select(nfds, &fd_workers, NULL, NULL, NULL);
+
+        if (select_ans < 0)
         {
             printf(ERROR_TEXT);
-            perror("Select");
+            perror("select");
             exit(EXIT_FAILURE);
-
-        } else if (select_ans) 
-            {
-            
+        }
+        else if (select_ans)
+        {
             for (i = 0; i < PROCESSES_COUNT; i++)
             {
                 if (FD_ISSET(fd_results[i][0], &fd_workers))
                 {
                     res_processes[i]++;
-                    read(fd_results[i][0], buf, sizeof(buf));
+                    if (read(fd_results[i][0], buf, sizeof(buf)) < 0)
+                    {
+                        printf(ERROR_TEXT);
+                        perror("read");
+                        exit(EXIT_FAILURE);
+                    };
 
+                    if (write(resolved_fd, buf, sizeof(buf) < 0))
+                    {
+                        printf(ERROR_TEXT);
+                        perror("write");
+                        exit(EXIT_FAILURE);
+                    }
+                    files_count_resolved++;
 
+                    memcpy(aux_pointer_sh_mem, buf, sizeof(buf));
+                    int ret_val = sem_post(sem_w_shm);
+                    if (ret_val < 0)
+                    {
+                        printf(ERROR_TEXT);
+                        perror("sem_post");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    aux_pointer_sh_mem += SIZEOF_RESPONSE;
+                    clean_buffer(buf);
+
+                    if (res_processes[i] >= INITIAL_FILES_COUNT && files_count_to_send)
+                    {
+                        char aux_buffer[BUFFER_SIZE] = {'\0'};
+
+                        strcpy(aux_buffer, argv[offset_args++]);
+                        strcat(aux_buffer, "\n");
+
+                        // Mandamos otra tarea a un worker
+                        write(fd_works[i][1], aux_buffer, strlen(aux_buffer));
+                        files_count_to_send--;
+                        clean_buffer(aux_buffer);
+                    }
+                    else if (0 == files_count_to_send)
+                    {
+                        close(fd_works[i][1]);
+                        close(fd_results[i][0]);
+                        flags_fd_work_open[i] = 0;
+                        waitpid(processes[i], NULL, 0); // esperando que terminen los hijos
+                    }
                 }
-                
-            }   
+            }
+        }
+        else
+        {
+            printf("Select timeout expired\n");
         }
     }
+    char buffer[BUFFER_SIZE] = {'\0'};
 
->>>>>>> 5db9f4a018b0858ab8199818686a69ca3619c159
+    sprintf(buffer, "Number of resolved files: %d\n", files_count_resolved);
+    memcpy(aux_pointer_sh_mem, buffer, sizeof(buffer));
+
+    if (sem_close(sem_w_shm) < 0 || sem_unlink(SEMAPHORE_NAME) < 0)
+    {
+        printf(ERROR_TEXT);
+        perror("sem_close | sem_unlink");
+        exit(EXIT_FAILURE);
+    }
+
+    if (munmap(pointer_sh_mem, (SIZEOF_RESPONSE * files_count_resolved)) < 0)
+    {
+
+        printf(ERROR_TEXT);
+        perror("munmap");
+        exit(EXIT_FAILURE);
+    }
+
+    if (shm_unlink(SHARED_MEMORY_OBJ_NAME) < 0)
+    {
+        printf(ERROR_TEXT);
+        perror("shm_unlink");
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd_shared_memory);
+
+    write(resolved_fd, SEPARATOR, sizeof(SEPARATOR));
+    close(resolved_fd);
     return 0;
 }
 
@@ -249,16 +314,17 @@ void reinitialize_fd_set(int *nfds, fd_set *fd_workers)
     int aux_nfds = 0;
 
     fd_set aux_fd_workers;
-    FD_ZERO(&fd_workers); // clears (removes all file descriptors from) set
+    FD_ZERO(&aux_fd_workers); // clears (removes all file descriptors from) set
 
-    for (int i = 0; i < PROCESSES_COUNT; i++)
+    int i = 0;
+    for (; i < PROCESSES_COUNT; i++)
     {
         if (flags_fd_work_open[i] != 0)
         {
-            FD_SET(fd_sols[i][0], &fd_workers); // adds the file descriptor fd to set
-            if (fd_sols[i][0] > aux_nfds)
+            FD_SET(fd_results[i][0], &aux_fd_workers); // adds the file descriptor fd to set
+            if (fd_results[i][0] > aux_nfds)
             {
-                aux_nfds = fd_sols[i][0] + 1;
+                aux_nfds = fd_results[i][0] + 1;
             }
         }
     }
