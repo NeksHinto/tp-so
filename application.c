@@ -62,17 +62,55 @@ int main(int argc, char const *argv[])
     {
         concat_files(INITIAL_FILES_COUNT, (argv + offset_args), files_concat);
         offset_args += INITIAL_FILES_COUNT;
-        write(fd_work[i][1], files_concat, strlen(files_concat) + 1);
+        write(fd_works[i][1], files_concat, strlen(files_concat) + 1);
         clean_buffer(files_concat);
         files_count_to_send -= INITIAL_FILES_COUNT;
     }
 
+<<<<<<< HEAD
     int nfds = 0;
     fd_set fd_workers;
     while ((argc - 1) > files_count_resolved)
     {
         reinitialize_fd_set(&nfds, &fd_workers);
     }
+=======
+    // ahora tenemos que armar la logica del padre para leer y mandar tareas a los hijos
+    fd_set fd_workers;
+
+
+    while ((argc - 1) > files_count_resolved) 
+    {
+        char buf[BUFFER_SIZE] = {'\0'};
+        
+        // tenermos que preparar el select para despues hacerlo
+
+        int select_ans; // aca hariamos el select
+
+        if (select_ans < 0) 
+        {
+            printf(ERROR_TEXT);
+            perror("Select");
+            exit(EXIT_FAILURE);
+
+        } else if (select_ans) 
+            {
+            
+            for (i = 0; i < PROCESSES_COUNT; i++)
+            {
+                if (FD_ISSET(fd_results[i][0], &fd_workers))
+                {
+                    res_processes[i]++;
+                    read(fd_results[i][0], buf, sizeof(buf));
+
+
+                }
+                
+            }   
+        }
+    }
+
+>>>>>>> 5db9f4a018b0858ab8199818686a69ca3619c159
     return 0;
 }
 
@@ -123,7 +161,7 @@ void create_pipes()
     int i;
     for (i = 0; i < PROCESSES_COUNT; i++)
     {
-        if (pipe(fd_work[i]) != 0)
+        if (pipe(fd_works[i]) != 0)
         {
             printf(ERROR_TEXT);
             perror("PIPE Work");
@@ -152,17 +190,17 @@ void create_slaves()
                 // Cerramos los pipes ajenos a este hijo
                 if (j != i)
                 {
-                    close(fd_work[j][0]);
-                    close(fd_work[j][1]);
+                    close(fd_works[j][0]);
+                    close(fd_works[j][1]);
                     close(fd_results[j][0]);
                     close(fd_results[j][1]);
                 }
             }
-            close(fd_work[i][1]);
+            close(fd_works[i][1]);
             close(fd_results[i][0]);
 
             // Redireccionamos la entrada del hijo al nuevo pipe
-            if (dup2(fd_work[i][0], STDIN_FILENO) < 0)
+            if (dup2(fd_works[i][0], STDIN_FILENO) < 0)
             {
                 printf(ERROR_TEXT);
                 perror("Dup work");
