@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
+#include <errors.h>
 #include <sys/select.h>
 #include <limits.h>
 #include <string.h>
@@ -26,8 +26,8 @@
 
 #define PROCESSES_COUNT 5
 #define INITIAL_FILES_COUNT 2
-#define ERROR_TEXT "ERROR in Application: "
 #define SEPARATOR "-------------------\n"
+#define FILE_NAME "application.c"
 
 int fd_works[PROCESSES_COUNT][2];   // PIPE from application to worker
 int fd_results[PROCESSES_COUNT][2]; // PIPE from worker to application

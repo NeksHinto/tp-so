@@ -14,15 +14,13 @@ int main(void)
         sem_t *sem_r_share_memory = sem_open(SEMAPHORE_NAME, O_CREAT);
         if (SEM_FAILED == sem_r_share_memory)
         {
-                printf(ERROR_TEXT);
-                perror("sem_open");
+                print_error(FILE_NAME, "main: sem_open", errno);
                 exit(EXIT_FAILURE);
         }
         int ans = sem_wait(sem_r_share_memory);
         if (ans < 0)
         {
-                printf(ERROR_TEXT);
-                perror("sem_wait");
+                print_error(FILE_NAME, "main: sem_wait", errno);
                 exit(EXIT_FAILURE);
         }
 
@@ -32,16 +30,14 @@ int main(void)
 
         if (-1 == fstat(fd_share_memory, &share_memory_obj_st))
         {
-                printf(ERROR_TEXT);
-                perror("fstat");
+                print_error(FILE_NAME, "main: fstat", errno);
                 exit(EXIT_FAILURE);
         }
         pointer = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, fd_share_memory, 0);
         aux_pointer = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, fd_share_memory, 0);
         if (MAP_FAILED == pointer || MAP_FAILED == aux_pointer)
         {
-                printf(ERROR_TEXT);
-                perror("Map failed in read process");
+                print_error(FILE_NAME, "main: mmap", errno);
                 exit(EXIT_FAILURE);
         }
         int files = (int)atoi(aux_pointer);
@@ -57,9 +53,8 @@ int main(void)
                 ans = sem_wait(sem_r_share_memory);
                 if (ans < 0)
                 {
-                        printf(ERROR_TEXT);
-                        perror("sem_wait");
-                        exit(EXIT_FAILURE);
+                      print_error(FILE_NAME, "main: sem_wait", errno);
+                      exit(EXIT_FAILURE);
                 }
 
                 files--;
@@ -74,15 +69,13 @@ int main(void)
 
         if (sem_close(sem_r_share_memory) < 0)
         {
-                printf(ERROR_TEXT);
-                perror("sem_close");
+                print_error(FILE_NAME, "main: sem_close", errno);
                 exit(EXIT_FAILURE);
         }
 
         if (munmap(pointer, share_memory_obj_st.st_size) < 0)
         {
-                printf(ERROR_TEXT);
-                perror("munmap");
+                print_error(FILE_NAME, "main: munmap", errno);
                 exit(EXIT_FAILURE);
         }
         close(fd_share_memory);
