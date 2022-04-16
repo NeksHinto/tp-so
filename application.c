@@ -25,8 +25,7 @@ int main(int argc, char const *argv[])
     aux_pointer_sh_mem = mmap(NULL, SIZEOF_RESPONSE * files_count_to_send, PROT_WRITE, MAP_SHARED, fd_shared_memory, 0);
     if (pointer_sh_mem == MAP_FAILED || aux_pointer_sh_mem == MAP_FAILED)
     {
-        printf(ERROR_TEXT);
-        perror("Map failed in write process");
+        print_error(FILE_NAME, "create_slaves: mmap", errno);
         exit(1);
     }
 
@@ -41,8 +40,7 @@ int main(int argc, char const *argv[])
     return_sem = sem_post(sem_w_shm);
     if (return_sem < 0)
     {
-        printf(ERROR_TEXT);
-        perror("SEM_POST");
+        print_error(FILE_NAME, "main: sem_post", errno);
         exit(1);
     }
 
@@ -50,8 +48,7 @@ int main(int argc, char const *argv[])
     // Resource: https://linux.die.net/man/3/open
     if ((resolved_fd = open(FILE_OUTPUT, O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR)) < 0)
     {
-        printf(ERROR_TEXT);
-        perror("Open");
+        print_error(FILE_NAME, "main: open", errno);
         exit(1);
     }
 
@@ -77,8 +74,7 @@ void check_format(int files_count, const char *files[], char *format)
     {
         if (strstr(files[i], format) == NULL)
         {
-            printf(ERROR_TEXT);
-            printf("Send only .cnf files\n");
+            print_error(FILE_NAME, "check_format", errno);
             exit(1);
         }
     }
@@ -90,14 +86,12 @@ int shm_create(size_t size)
     fd = shm_open(SHARED_MEMORY_OBJ_NAME, O_CREAT | O_RDWR, 00700);
     if (-1 == fd)
     {
-        printf(ERROR_TEXT);
-        perror("File descriptor");
+        print_error(FILE_NAME, "shm_create: shm_open", errno);
         exit(1);
     }
     if (-1 == ftruncate(fd, size))
     {
-        printf(ERROR_TEXT);
-        perror("Share memory cannot be resized");
+        print_error(FILE_NAME, "shm_create: shm_open", errno);
         exit(1);
     }
     return fd;
@@ -119,15 +113,13 @@ void create_pipes()
     {
         if (pipe(fd_work[i]) != 0)
         {
-            printf(ERROR_TEXT);
-            perror("PIPE Work");
+            print_error(FILE_NAME, "create_pipes: workers", errno);
             exit(1);
         }
         flags_fd_work_open[i] = 1;
         if (pipe(fd_results[i]) != 0)
         {
-            printf(ERROR_TEXT);
-            perror("PIPE results");
+            print_error(FILE_NAME, "create_pipes: results", errno);
             exit(1);
         }
     }
@@ -158,15 +150,13 @@ void create_slaves()
             // Redireccionamos la entrada del hijo al nuevo pipe
             if (dup2(fd_work[i][0], STDIN_FILENO) < 0)
             {
-                printf(ERROR_TEXT);
-                perror("Dup work");
+                print_error(FILE_NAME, "create_slaves: workers's dup", errno);
                 exit(1);
             }
 
             if (dup2(fd_results[i][1], STDOUT_FILENO) < 0)
             {
-                printf(ERROR_TEXT);
-                perror("Dup results");
+                print_error(FILE_NAME, "create_slaves: results's dup", errno);
                 exit(1);
             }
 
@@ -174,15 +164,14 @@ void create_slaves()
             int res_execv = execv(params[0], params);
             if (res_execv < 0)
             {
-                printf(ERROR_TEXT);
-                perror("Execv");
+                print_error(FILE_NAME, "create_slaves: execv", errno);
                 exit(1);
             }
         }
         else if (processes[i] < 0)
         {
-            printf(ERROR_TEXT);
-            perror("Fork");
+          print_error(FILE_NAME, "create_slaves: fork", errno);
+
         }
     }
 }

@@ -37,8 +37,7 @@ int main(int argc, char const *argv[])
                                 if (len < 0)
                                 {
                                         printf("PID: %d | ", getpid());
-                                        printf(ERROR_TEXT);
-                                        perror("sprintf\n");
+                                        print_error(FILE_NAME, "sprintf", errno);
                                         abort();
                                 }
 
@@ -46,8 +45,7 @@ int main(int argc, char const *argv[])
                                 if (fp == NULL)
                                 {
                                         printf("PID: %d | ", getpid());
-                                        printf(ERROR_TEXT);
-                                        perror("popen\n");
+                                        print_error(FILE_NAME, "popen", errno);
                                         abort();
                                 }
                                 fgets(&cmd[len], BUFFER_SIZE, fp); // Validar que no retorne NULL ?
@@ -55,8 +53,7 @@ int main(int argc, char const *argv[])
                                 if (status < 0)
                                 {
                                         printf("PID: %d | ", getpid());
-                                        printf(ERROR_TEXT);
-                                        perror("pclose\n");
+                                        print_error(FILE_NAME, "pclose", errno);
                                         abort();
                                 }
                                 printf("%s \n", cmd);

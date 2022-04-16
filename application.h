@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
+#include <errors.h>
 #include <sys/select.h>
 #include <limits.h>
 #include <string.h>
@@ -26,7 +26,7 @@
 
 #define PROCESSES_COUNT 5
 #define INITIAL_FILES_COUNT 2
-#define ERROR_TEXT "ERROR in Application: "
+#define FILE_NAME "application.c"
 
 int fd_work[PROCESSES_COUNT][2];    // PIPE master --> slave
 int fd_results[PROCESSES_COUNT][2]; // PIPE slave --> master
