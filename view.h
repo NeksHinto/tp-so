@@ -9,7 +9,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <semaphore.h>
-#include "errors.h"
+#include "utils.h"
 
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
 #define SIZEOF_RESPONSE 150

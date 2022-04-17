@@ -6,18 +6,18 @@
 int main(int argc, char const *argv[])
 {
 
-    // MODULARIZAR LOS MENSAJES DE ERROR
-    //  Resource: Arielito
+    // No buffering (tp0)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stdin, 0, _IONBF, 0);
 
+    int files_count_to_send = argc - 1;
     check_format(files_count_to_send, (argv + 1), ".cnf");
+
     create_pipes();
     create_slaves();
 
     sem_t *sem_w_shm = sem_open(SEMAPHORE_NAME, O_CREAT, 0644, 0);
 
-    int files_count_to_send = argc - 1;
     int i = 1;
 
     int fd_shared_memory = shm_create(SIZEOF_RESPONSE * files_count_to_send);
@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
     if (pointer_sh_mem == MAP_FAILED || aux_pointer_sh_mem == MAP_FAILED)
     {
         print_error(FILE_NAME, "create_slaves: mmap", errno);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     sleep(2); // Espera al proceso vista (consigna)
@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     if (return_sem < 0)
     {
         print_error(FILE_NAME, "main: sem_post", errno);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     int resolved_fd;
@@ -49,7 +49,7 @@ int main(int argc, char const *argv[])
     if ((resolved_fd = open(FILE_OUTPUT, O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR)) < 0)
     {
         print_error(FILE_NAME, "main: open", errno);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     char files_concat[BUFFER_SIZE] = {'\0'};
@@ -88,29 +88,22 @@ int main(int argc, char const *argv[])
                 if (FD_ISSET(fd_results[i][0], &fd_workers))
                 {
                     res_processes[i]++;
-                    // read(fd_results[i][0], buf, sizeof(buf));
-                    int ans_read; //= read(fd_results[i][0], buf, sizeof(buf));
-                    if ((ans_read = read(fd_results[i][0], buf, sizeof(buf))) < 0)
+                    if (read(fd_results[i][0], buf, sizeof(buf)) < 0)
                     {
                         printf(ERROR_TEXT);
                         perror("read");
                         exit(EXIT_FAILURE);
                     }
-                    printf("read: %d", ans_read);
-                    printf("\n");
+
                     files_count_resolved++;
 
-                    printf("1\n");
-                    int ans_write = write(resolved_fd, buf, sizeof(buf));
-                    
-
-                    if (ans_write < 0)
+                    if (write(resolved_fd, buf, sizeof(buf)) < 0)
                     {
                         printf(ERROR_TEXT);
                         perror("write");
                         exit(EXIT_FAILURE);
                     }
-                    printf("2\n");
+
                     memcpy(aux_pointer_sh_mem, buf, sizeof(buf));
                     int ret_val;
                     ret_val = sem_post(sem_w_shm);
@@ -126,7 +119,6 @@ int main(int argc, char const *argv[])
 
                     if (res_processes[i] >= INITIAL_FILES_COUNT && files_count_to_send > 0)
                     {
-                        printf("aca tenemos que entrar\n");
                         char aux_buffer[BUFFER_SIZE] = {'\0'};
 
                         strcpy(aux_buffer, argv[offset_args++]);
@@ -136,7 +128,6 @@ int main(int argc, char const *argv[])
                         write(fd_works[i][1], aux_buffer, strlen(aux_buffer));
                         files_count_to_send--;
                         clean_buffer(aux_buffer);
-                        printf("aca tenemos que salir\n");
                     }
                     else if (0 == files_count_to_send)
                     {
@@ -195,7 +186,7 @@ void check_format(int files_count, const char *files[], char *format)
         if (strstr(files[i], format) == NULL)
         {
             print_error(FILE_NAME, "check_format", errno);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -207,23 +198,14 @@ int shm_create(size_t size)
     if (-1 == fd)
     {
         print_error(FILE_NAME, "shm_create: shm_open", errno);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     if (-1 == ftruncate(fd, size))
     {
         print_error(FILE_NAME, "shm_create: shm_open", errno);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return fd;
-}
-
-void clean_buffer(char *buffer)
-{
-    int j = 0;
-    while (buffer[j] != '\0')
-    {
-        buffer[j++] = '\0';
-    }
 }
 
 void create_pipes()
@@ -234,13 +216,13 @@ void create_pipes()
         if (pipe(fd_works[i]) != 0)
         {
             print_error(FILE_NAME, "create_pipes: workers", errno);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         flags_fd_work_open[i] = 1;
         if (pipe(fd_results[i]) != 0)
         {
             print_error(FILE_NAME, "create_pipes: results", errno);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -271,13 +253,13 @@ void create_slaves()
             if (dup2(fd_works[i][0], STDIN_FILENO) < 0)
             {
                 print_error(FILE_NAME, "create_slaves: workers's dup", errno);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
 
             if (dup2(fd_results[i][1], STDOUT_FILENO) < 0)
             {
                 print_error(FILE_NAME, "create_slaves: results's dup", errno);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
 
             char *const params[] = {"worker", NULL};
@@ -285,7 +267,7 @@ void create_slaves()
             if (res_execv < 0)
             {
                 print_error(FILE_NAME, "create_slaves: execv", errno);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
         }
         else if (processes[i] < 0)

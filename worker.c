@@ -33,7 +33,7 @@ int main(int argc, char const *argv[])
                                 strcat(param, buffer_aux);
                                 strcat(param, GREP_AND_FLAGS);
 
-                                int len = sprintf(cmd, "PID: %d | Solucion de: %s | ", getpid(), buffer_aux);
+                                int len = sprintf(cmd, "PID: %d | Solution from: %s | ", getpid(), buffer_aux);
                                 if (len < 0)
                                 {
                                         printf("PID: %d | ", getpid());
@@ -71,13 +71,4 @@ int main(int argc, char const *argv[])
         }
 
         return 0;
-}
-
-void clean_buffer(char *buffer)
-{
-        int j = 0;
-        while (buffer[j] != '\0')
-        {
-                buffer[j++] = '\0';
-        }
 }

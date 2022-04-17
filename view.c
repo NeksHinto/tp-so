@@ -3,7 +3,7 @@
 
 #include "view.h"
 
-//Codigo prestado: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
+//Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
 int main(void)
 { 
         int fd_share_memory;
@@ -80,13 +80,4 @@ int main(void)
         }
         close(fd_share_memory);
         return 0;
-}
-
-void clean_buffer(char *buffer)
-{
-        int j = 0;
-        while (buffer[j] != '\0')
-        {
-                buffer[j++] = '\0';
-        }
 }
