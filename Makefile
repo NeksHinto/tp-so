@@ -1,20 +1,22 @@
-all:
-	gcc -Wall -o view view.h
-	gcc -Wall -o application application.h
-	gcc -Wall -o worker worker.h
-	gcc -Wall -o worker worker.c
-	gcc -Wall -o view view.c -lrt -pthread
-	gcc -Wall -o application application.c -lrt -pthread
-	
+CC = gcc
+GCCFLAG = -g -Wall -std=c99
+GCCLIBS = -lrt -lpthread
+EXT_FILES = utils.c
+APP = application view worker
+OUTPUT = output_application
+
+all: $(APP)
+$(APP): %: %.c
+	@$(CC) $(GCCFLAGS) $(EXT_FILES) -o $@ $< $(GCCLIBS)
+
+.PHONY: clean
 clean:
-	rm application worker view
-	rm ./output_application
-	rm /dev/shm/shm_obj
+	@rm -rf $(APP) $(OUTPUT)
 
-.PHONY: all clean
+# # a phony target is simply a target that is always out-of-date, 
+# # so whenever you ask make <phony_target>, it will run, independent 
+# # from the state of the file system.
+# # ignora la existencia de el/los archivo/s que estan despues
+# # cosa de “actualizar” el archivo	
 
-# a phony target is simply a target that is always out-of-date, 
-# so whenever you ask make <phony_target>, it will run, independent 
-# from the state of the file system.
-# ignora la existencia de el/los archivo/s que estan despues
-# cosa de “actualizar” el archivo	
+# 	@$(CC) $(GCCFLAGS) $(EXT_FILES) -o $@ $< $(GCCLIBS)

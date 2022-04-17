@@ -46,8 +46,6 @@ void check_format(int files_count, const char *files[], char *format);
 // Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
 int shm_create(size_t size);
 
-void clean_buffer(char *buffer);
-
 void create_pipes();
 
 void create_slaves();

@@ -16,6 +16,4 @@
 #define FILE_NAME "view.c"
 #define SEMAPHORE_NAME "semaphore1"
 
-void clean_buffer(char *buffer);
-
 #endif

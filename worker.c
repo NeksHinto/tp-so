@@ -27,9 +27,8 @@ int main(int argc, char const *argv[])
                                 j = 0;
 
                                 char cmd[BUFFER_SIZE] = {'\0'};
-                                char param[BUFFER_SIZE] = {"\0"};
+                                char param[BUFFER_SIZE] = {'\0'};
                                 strcpy(param, MINISAT);
-
                                 strcat(param, buffer_aux);
                                 strcat(param, GREP_AND_FLAGS);
 
@@ -48,7 +47,13 @@ int main(int argc, char const *argv[])
                                         print_error(FILE_NAME, "popen", errno);
                                         exit(EXIT_FAILURE);
                                 }
-                                fgets(&cmd[len], BUFFER_SIZE, fp); // Validar que no retorne NULL ?
+                                char *ret_line = fgets(&cmd[len], BUFFER_SIZE, fp);
+                                if (ret_line == NULL)
+                                {
+                                        printf("PID: %d | ", getpid());
+                                        print_error(FILE_NAME, "fgets", errno);
+                                        exit(EXIT_FAILURE);
+                                }
                                 int status = pclose(fp);
                                 if (status < 0)
                                 {
