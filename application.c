@@ -88,23 +88,32 @@ int main(int argc, char const *argv[])
                 if (FD_ISSET(fd_results[i][0], &fd_workers))
                 {
                     res_processes[i]++;
-                    if (read(fd_results[i][0], buf, sizeof(buf)) < 0)
+                    // read(fd_results[i][0], buf, sizeof(buf));
+                    int ans_read; //= read(fd_results[i][0], buf, sizeof(buf));
+                    if ((ans_read = read(fd_results[i][0], buf, sizeof(buf))) < 0)
                     {
                         printf(ERROR_TEXT);
                         perror("read");
                         exit(EXIT_FAILURE);
-                    };
+                    }
+                    printf("read: %d", ans_read);
+                    printf("\n");
+                    files_count_resolved++;
 
-                    if (write(resolved_fd, buf, sizeof(buf) < 0))
+                    printf("1\n");
+                    int ans_write = write(resolved_fd, buf, sizeof(buf));
+                    
+
+                    if (ans_write < 0)
                     {
                         printf(ERROR_TEXT);
                         perror("write");
                         exit(EXIT_FAILURE);
                     }
-                    files_count_resolved++;
-
+                    printf("2\n");
                     memcpy(aux_pointer_sh_mem, buf, sizeof(buf));
-                    int ret_val = sem_post(sem_w_shm);
+                    int ret_val;
+                    ret_val = sem_post(sem_w_shm);
                     if (ret_val < 0)
                     {
                         printf(ERROR_TEXT);
@@ -115,8 +124,9 @@ int main(int argc, char const *argv[])
                     aux_pointer_sh_mem += SIZEOF_RESPONSE;
                     clean_buffer(buf);
 
-                    if (res_processes[i] >= INITIAL_FILES_COUNT && files_count_to_send)
+                    if (res_processes[i] >= INITIAL_FILES_COUNT && files_count_to_send > 0)
                     {
+                        printf("aca tenemos que entrar\n");
                         char aux_buffer[BUFFER_SIZE] = {'\0'};
 
                         strcpy(aux_buffer, argv[offset_args++]);
@@ -126,6 +136,7 @@ int main(int argc, char const *argv[])
                         write(fd_works[i][1], aux_buffer, strlen(aux_buffer));
                         files_count_to_send--;
                         clean_buffer(aux_buffer);
+                        printf("aca tenemos que salir\n");
                     }
                     else if (0 == files_count_to_send)
                     {

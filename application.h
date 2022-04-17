@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errors.h>
+#include "errors.h"
 #include <sys/select.h>
 #include <limits.h>
 #include <string.h>
