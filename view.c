@@ -3,13 +3,13 @@
 
 #include "view.h"
 
-//Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
+// Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
 int main(void)
 { 
-        int fd_share_memory;
-        char *pointer;
+        int shm_fd;
+        char *pointer_shm;
         struct stat share_memory_obj_st;
-        char *aux_pointer;
+        char *aux_pointer_shm;
 
         sem_t *sem_r_share_memory = sem_open(SEMAPHORE_NAME, O_CREAT);
         if (SEM_FAILED == sem_r_share_memory)
@@ -25,23 +25,23 @@ int main(void)
         }
 
         // open s.m object
-        while (-1 == (fd_share_memory = shm_open(SHARED_MEMORY_OBJ_NAME, O_RDONLY, 00400)))
+        while (-1 == (shm_fd = shm_open(SHARED_MEMORY_OBJ_NAME, O_RDONLY, 00400)))
                 ;
 
-        if (-1 == fstat(fd_share_memory, &share_memory_obj_st))
+        if (-1 == fstat(shm_fd, &share_memory_obj_st))
         {
                 print_error(FILE_NAME, "main: fstat", errno);
                 exit(EXIT_FAILURE);
         }
-        pointer = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, fd_share_memory, 0);
-        aux_pointer = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, fd_share_memory, 0);
-        if (MAP_FAILED == pointer || MAP_FAILED == aux_pointer)
+        pointer_shm = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, shm_fd, 0);
+        aux_pointer_shm = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, shm_fd, 0);
+        if (MAP_FAILED == pointer_shm || MAP_FAILED == aux_pointer_shm)
         {
                 print_error(FILE_NAME, "main: mmap", errno);
                 exit(EXIT_FAILURE);
         }
-        int files = (int)atoi(aux_pointer);
-        aux_pointer += sizeof(files);
+        int files = (int)atoi(aux_pointer_shm);
+        aux_pointer_shm += sizeof(files);
         printf("\n");
         printf("VIEW Process: %d solutions for printing\n", files);
         printf("\n ///////////////////////////////////////////////////////////////////////\n\n");
@@ -58,8 +58,8 @@ int main(void)
                 }
 
                 files--;
-                memcpy(buffer, aux_pointer, SIZEOF_RESPONSE);
-                aux_pointer += SIZEOF_RESPONSE;
+                memcpy(buffer, aux_pointer_shm, SIZEOF_RESPONSE);
+                aux_pointer_shm += SIZEOF_RESPONSE;
 
                 write(STDOUT_FILENO, buffer, SIZEOF_RESPONSE);
                 clean_buffer(buffer);
@@ -73,11 +73,11 @@ int main(void)
                 exit(EXIT_FAILURE);
         }
 
-        if (munmap(pointer, share_memory_obj_st.st_size) < 0)
+        if (munmap(pointer_shm, share_memory_obj_st.st_size) < 0)
         {
                 print_error(FILE_NAME, "main: munmap", errno);
                 exit(EXIT_FAILURE);
         }
-        close(fd_share_memory);
+        close(shm_fd);
         return 0;
 }

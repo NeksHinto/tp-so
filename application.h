@@ -20,13 +20,13 @@
 #define FILE_OUTPUT "./output_application"
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
 #define BUFFER_SIZE 256
-#define SIZEOF_RESPONSE 150
+#define SIZEOF_RESPONSE 1024
 
 #define SEMAPHORE_NAME "semaphore1"
 
 #define PROCESSES_COUNT 5
 #define INITIAL_FILES_COUNT 2
-#define SEPARATOR "-------------------\n"
+#define SEPARATOR "--------------------------------------------------\n"
 #define FILE_NAME "application.c"
 
 int fd_works[PROCESSES_COUNT][2];   // PIPE from application to worker
@@ -35,23 +35,23 @@ int flags_fd_work_open[PROCESSES_COUNT];
 int processes[PROCESSES_COUNT];
 int offset_args = 1;
 int files_count_to_send = 0;
-int files_count_resolved = 0;
+int solved_files_count = 0;
 char *pointer_sh_mem;
 char *aux_pointer_sh_mem;
-int res_processes[PROCESSES_COUNT];
+int solved_per_process[PROCESSES_COUNT];
 
 // Validacion del tipo de archivo
-void check_format(int files_count, const char *files[], char *format);
+void validate_format(int files_count, const char *files[], char *format);
 
 // Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
 int shm_create(size_t size);
 
 void create_pipes();
 
-void create_slaves();
+void create_workers();
 
-void concat_files(int files_count, const char *files[], char concat[]);
+void concat_files(int files_count, const char *files[], char str[]);
 
-void reinitialize_fd_set(int *nfds, fd_set *fd_workers);
+void initialize_fd_set(int *nfds, fd_set *fd_workers);
 
 #endif

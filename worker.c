@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
 
                                 char cmd[BUFFER_SIZE] = {'\0'};
                                 char param[BUFFER_SIZE] = {'\0'};
-                                strcpy(param, MINISAT);
+                                strcpy(param, MINISAT_CMD);
                                 strcat(param, buffer_aux);
                                 strcat(param, GREP_AND_FLAGS);
 

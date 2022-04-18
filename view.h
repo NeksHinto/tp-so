@@ -14,6 +14,6 @@
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
 #define SIZEOF_RESPONSE 150
 #define FILE_NAME "view.c"
-#define SEMAPHORE_NAME "semaphore1"
+#define SEMAPHORE_NAME "my_semaphore"
 
 #endif
