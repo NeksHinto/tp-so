@@ -22,7 +22,7 @@
 #define BUFFER_SIZE 256
 #define SIZEOF_RESPONSE 1024
 
-#define SEMAPHORE_NAME "semaphore1"
+#define SEMAPHORE_NAME "my_semaphore"
 
 #define PROCESSES_COUNT 5
 #define INITIAL_FILES_COUNT 2
