@@ -1,5 +1,5 @@
-#ifndef VIEW
-#define VIEW
+#ifndef VIEW_H
+#define VIEW_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,7 +12,7 @@
 #include "utils.h"
 
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
-#define SIZEOF_RESPONSE 1024
+#define SIZEOF_RESPONSE 150
 #define FILE_NAME "view.c"
 #define SEMAPHORE_NAME "my_semaphore"
 

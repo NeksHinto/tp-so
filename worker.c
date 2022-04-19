@@ -37,7 +37,6 @@ int main(int argc, char const *argv[])
                                 {
                                         printf("PID: %d | ", getpid());
                                         print_error(FILE_NAME, "sprintf", errno);
-                                        exit(EXIT_FAILURE);
                                 }
 
                                 FILE *fp = popen(param, "r");
@@ -45,21 +44,18 @@ int main(int argc, char const *argv[])
                                 {
                                         printf("PID: %d | ", getpid());
                                         print_error(FILE_NAME, "popen", errno);
-                                        exit(EXIT_FAILURE);
                                 }
                                 char *ret_line = fgets(&cmd[len], BUFFER_SIZE, fp);
                                 if (ret_line == NULL)
                                 {
                                         printf("PID: %d | ", getpid());
                                         print_error(FILE_NAME, "fgets", errno);
-                                        exit(EXIT_FAILURE);
                                 }
                                 int status = pclose(fp);
                                 if (status < 0)
                                 {
                                         printf("PID: %d | ", getpid());
                                         print_error(FILE_NAME, "pclose", errno);
-                                        exit(EXIT_FAILURE);
                                 }
                                 printf("%s \n", cmd);
                                 clean_buffer(cmd);

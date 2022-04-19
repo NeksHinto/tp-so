@@ -5,8 +5,6 @@
 
 int main(int argc, char const *argv[])
 {
-
-    // No buffering (tp0)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stdin, 0, _IONBF, 0);
 
@@ -16,9 +14,6 @@ int main(int argc, char const *argv[])
     create_pipes();
     create_workers();
 
-    // From sem_open documentation: "Both read and write permission
-    // should be granted to each class of user that will access the semaphore."
-    // 0644 = 6 (owner permissions: R&W), 4 (other group users: READONLY), 4 (other: READONLY)
     sem_t *sem_w_shm = sem_open(SEMAPHORE_NAME, O_CREAT, 0644, 0);
 
     int i = 1;
@@ -29,37 +24,30 @@ int main(int argc, char const *argv[])
     if (pointer_sh_mem == MAP_FAILED || aux_pointer_sh_mem == MAP_FAILED)
     {
         print_error(FILE_NAME, "main: mmap", errno);
-        exit(EXIT_FAILURE);
     }
 
     sleep(2); // Espera al proceso vista (consigna)
 
-    // "Pushea" en el "stack" compartido el nro de args
     char args_count[10];
     sprintf(args_count, "%d", files_count_to_send);
     strcpy(aux_pointer_sh_mem, args_count);
     aux_pointer_sh_mem += sizeof(args_count);
 
-    // Unlock semaphore
     int return_sem;
     return_sem = sem_post(sem_w_shm);
     if (return_sem < 0)
     {
         print_error(FILE_NAME, "main: sem_post", errno);
-        exit(EXIT_FAILURE);
     }
 
     int solved_fd;
-    // Creamos archivo para printear los resultados
     if ((solved_fd = open(FILE_OUTPUT, O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR)) < 0)
     {
         print_error(FILE_NAME, "main: open", errno);
-        exit(EXIT_FAILURE);
     }
 
     char files_concat[BUFFER_SIZE] = {'\0'};
 
-    // Le mandamos 2 archivos a cada proceso hijo
     for (i = 0; i < PROCESSES_COUNT; i++)
     {
         concat_files(INITIAL_FILES_COUNT, (argv + offset_args), files_concat);
@@ -69,7 +57,7 @@ int main(int argc, char const *argv[])
         files_count_to_send -= INITIAL_FILES_COUNT;
     }
 
-    int nfds = 0; // number of fds to monitor
+    int nfds = 0;
     fd_set fd_workers;
 
     while ((argc - 1) > solved_files_count)
@@ -78,24 +66,22 @@ int main(int argc, char const *argv[])
 
         initialize_fd_set(&nfds, &fd_workers);
 
-        int sret = select(nfds, &fd_workers, NULL, NULL, NULL); // returns number of fds ready to be read
+        int sret = select(nfds, &fd_workers, NULL, NULL, NULL);
 
         if (sret < 0)
         {
             print_error(FILE_NAME, "main: select", errno);
-            exit(EXIT_FAILURE);
         }
         else if (sret)
         {
             for (i = 0; i < PROCESSES_COUNT; i++)
             {
-                if (FD_ISSET(fd_results[i][0], &fd_workers) != 0) // checks if worker result ready to be read
+                if (FD_ISSET(fd_results[i][0], &fd_workers) != 0)
                 {
                     solved_per_process[i]++;
                     if (read(fd_results[i][0], buf, sizeof(buf)) < 0)
                     {
                         print_error(FILE_NAME, "main: read", errno);
-                        exit(EXIT_FAILURE);
                     }
 
                     solved_files_count++;
@@ -103,7 +89,6 @@ int main(int argc, char const *argv[])
                     if (write(solved_fd, buf, sizeof(buf)) < 0)
                     {
                         print_error(FILE_NAME, "main: write", errno);
-                        exit(EXIT_FAILURE);
                     }
 
                     memcpy(aux_pointer_sh_mem, buf, sizeof(buf));
@@ -112,29 +97,27 @@ int main(int argc, char const *argv[])
                     if (ret_val < 0)
                     {
                         print_error(FILE_NAME, "main: sem_post", errno);
-                        exit(EXIT_FAILURE);
                     }
                     aux_pointer_sh_mem += SIZEOF_RESPONSE;
                     clean_buffer(buf);
 
-                    // If worker finishes with its 2 files & there are more files to solve, send more files to worker
                     if (solved_per_process[i] >= INITIAL_FILES_COUNT && files_count_to_send > 0)
                     {
                         char aux_buffer[BUFFER_SIZE] = {'\0'};
 
-                        strcpy(aux_buffer, argv[offset_args++]); // chequear esto con concat_files
+                        strcpy(aux_buffer, argv[offset_args++]);
                         strcat(aux_buffer, "\n");
 
                         write(fd_works[i][1], aux_buffer, strlen(aux_buffer));
                         files_count_to_send--;
                         clean_buffer(aux_buffer);
                     }
-                    else
+                    else if (files_count_to_send == 0)
                     {
                         close(fd_works[i][1]);
                         close(fd_results[i][0]);
                         flags_fd_work_open[i] = 0;
-                        waitpid(processes[i], NULL, 0); // esperando que terminen los hijos
+                        waitpid(processes[i], NULL, 0);
                     }
                 }
             }
@@ -152,20 +135,17 @@ int main(int argc, char const *argv[])
     if (sem_close(sem_w_shm) < 0 || sem_unlink(SEMAPHORE_NAME) < 0)
     {
         print_error(FILE_NAME, "main: sem_close", errno);
-        exit(EXIT_FAILURE);
     }
 
     if (munmap(pointer_sh_mem, (SIZEOF_RESPONSE * solved_files_count)) < 0)
     {
 
         print_error(FILE_NAME, "main: munmap", errno);
-        exit(EXIT_FAILURE);
     }
 
     if (shm_unlink(SHARED_MEMORY_OBJ_NAME) < 0)
     {
         print_error(FILE_NAME, "main: shm_unlink", errno);
-        exit(EXIT_FAILURE);
     }
 
     close(fd_shared_memory);
@@ -183,7 +163,6 @@ void validate_format(int files_count, const char *files[], char *format)
         if (strstr(files[i], format) == NULL)
         {
             print_error(FILE_NAME, "validate_format", errno);
-            exit(EXIT_FAILURE);
         }
     }
 }
@@ -195,12 +174,10 @@ int shm_create(size_t size)
     if (-1 == fd)
     {
         print_error(FILE_NAME, "shm_create: shm_open", errno);
-        exit(EXIT_FAILURE);
     }
     if (-1 == ftruncate(fd, size))
     {
         print_error(FILE_NAME, "shm_create: shm_open", errno);
-        exit(EXIT_FAILURE);
     }
     return fd;
 }
@@ -213,13 +190,11 @@ void create_pipes()
         if (pipe(fd_works[i]) != 0)
         {
             print_error(FILE_NAME, "create_pipes: workers", errno);
-            exit(EXIT_FAILURE);
         }
         flags_fd_work_open[i] = 1;
         if (pipe(fd_results[i]) != 0)
         {
             print_error(FILE_NAME, "create_pipes: results", errno);
-            exit(EXIT_FAILURE);
         }
     }
 }
@@ -234,7 +209,6 @@ void create_workers()
             int j;
             for (j = 0; j < PROCESSES_COUNT; j++)
             {
-                // Cerramos los pipes ajenos a este hijo
                 if (j != i)
                 {
                     close(fd_works[j][0]);
@@ -243,38 +217,29 @@ void create_workers()
                     close(fd_results[j][1]);
                 }
             }
-            // Cerramos canal de escritura en el works y el de lectura en el results
-            // del worker que estamos creando
-            close(fd_works[i][1]); 
+            close(fd_works[i][1]);
             close(fd_results[i][0]);
 
-            // Redireccionamos la entrada del hijo al fd_read
             if (dup2(fd_works[i][0], STDIN_FILENO) < 0)
             {
                 print_error(FILE_NAME, "create_workers: workers' dup", errno);
-                exit(EXIT_FAILURE);
             }
 
-            // Redireccionamos la salida del hijo al fd_write
             if (dup2(fd_results[i][1], STDOUT_FILENO) < 0)
             {
                 print_error(FILE_NAME, "create_workers: results's dup", errno);
-                exit(EXIT_FAILURE);
             }
 
-            // Ejecutar worker desde application (reemplaza pid_application = pid_worker)
             char *const argv[] = {"worker", NULL};
             int res_execv = execv(argv[0], argv);
             if (res_execv < 0)
             {
                 print_error(FILE_NAME, "create_workers: execv", errno);
-                exit(EXIT_FAILURE);
             }
         }
         else if (processes[i] < 0)
         {
-          print_error(FILE_NAME, "create_workers: fork", errno);
-
+            print_error(FILE_NAME, "create_workers: fork", errno);
         }
     }
 }
@@ -297,14 +262,14 @@ void initialize_fd_set(int *nfds, fd_set *fd_workers)
     int aux_nfds = 0;
 
     fd_set aux_workers_fds;
-    FD_ZERO(&aux_workers_fds); // sets all fds to 0
+    FD_ZERO(&aux_workers_fds);
 
     int i = 0;
     for (; i < PROCESSES_COUNT; i++)
     {
         if (flags_fd_work_open[i] != 0)
         {
-            FD_SET(fd_results[i][0], &aux_workers_fds); // sets fd_read from result pipe to workers' set of fds
+            FD_SET(fd_results[i][0], &aux_workers_fds);
             if (fd_results[i][0] > aux_nfds)
             {
                 aux_nfds = fd_results[i][0] + 1;

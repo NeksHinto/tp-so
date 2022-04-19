@@ -1,5 +1,5 @@
-#ifndef APPLICATION
-#define APPLICATION
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,7 +20,7 @@
 #define FILE_OUTPUT "./output_application"
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
 #define BUFFER_SIZE 256
-#define SIZEOF_RESPONSE 1024
+#define SIZEOF_RESPONSE 150
 
 #define SEMAPHORE_NAME "my_semaphore"
 
@@ -40,7 +40,6 @@ char *pointer_sh_mem;
 char *aux_pointer_sh_mem;
 int solved_per_process[PROCESSES_COUNT];
 
-// Validacion del tipo de archivo
 void validate_format(int files_count, const char *files[], char *format);
 
 // Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
