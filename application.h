@@ -20,7 +20,7 @@
 #define FILE_OUTPUT "./output_application"
 #define SHARED_MEMORY_OBJ_NAME "/shm_obj"
 #define BUFFER_SIZE 256
-#define SIZEOF_RESPONSE 1024
+#define SIZEOF_RESPONSE 150
 
 #define SEMAPHORE_NAME "my_semaphore"
 

@@ -5,7 +5,7 @@
 
 // Resource: https://github.com/WhileTrueThenDream/ExamplesCLinuxUserSpace
 int main(void)
-{ 
+{
         int shm_fd;
         char *pointer_shm;
         struct stat share_memory_obj_st;
@@ -15,13 +15,11 @@ int main(void)
         if (SEM_FAILED == sem_r_share_memory)
         {
                 print_error(FILE_NAME, "main: sem_open", errno);
-                exit(EXIT_FAILURE);
         }
         int ans = sem_wait(sem_r_share_memory);
         if (ans < 0)
         {
                 print_error(FILE_NAME, "main: sem_wait", errno);
-                exit(EXIT_FAILURE);
         }
 
         // open s.m object
@@ -31,14 +29,12 @@ int main(void)
         if (-1 == fstat(shm_fd, &share_memory_obj_st))
         {
                 print_error(FILE_NAME, "main: fstat", errno);
-                exit(EXIT_FAILURE);
         }
         pointer_shm = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, shm_fd, 0);
         aux_pointer_shm = mmap(NULL, share_memory_obj_st.st_size, PROT_READ, MAP_SHARED, shm_fd, 0);
         if (MAP_FAILED == pointer_shm || MAP_FAILED == aux_pointer_shm)
         {
                 print_error(FILE_NAME, "main: mmap", errno);
-                exit(EXIT_FAILURE);
         }
         int files = (int)atoi(aux_pointer_shm);
         aux_pointer_shm += sizeof(files);
@@ -53,8 +49,7 @@ int main(void)
                 ans = sem_wait(sem_r_share_memory);
                 if (ans < 0)
                 {
-                      print_error(FILE_NAME, "main: sem_wait", errno);
-                      exit(EXIT_FAILURE);
+                        print_error(FILE_NAME, "main: sem_wait", errno);
                 }
 
                 files--;
@@ -70,13 +65,11 @@ int main(void)
         if (sem_close(sem_r_share_memory) < 0)
         {
                 print_error(FILE_NAME, "main: sem_close", errno);
-                exit(EXIT_FAILURE);
         }
 
         if (munmap(pointer_shm, share_memory_obj_st.st_size) < 0)
         {
                 print_error(FILE_NAME, "main: munmap", errno);
-                exit(EXIT_FAILURE);
         }
         close(shm_fd);
         return 0;
