@@ -12,6 +12,7 @@ int main(int argc, char const *argv[])
     validate_format(files_count_to_send, (argv + 1), ".cnf");
 
     create_pipes();
+    create_named_pipe();
     create_workers();
 
     sem_t *sem_w_shm = sem_open(SEMAPHORE_NAME, O_CREAT, 0644, 0);
@@ -197,6 +198,16 @@ void create_pipes()
             print_error(FILE_NAME, "create_pipes: results", errno);
         }
     }
+}
+
+void create_named_pipe()
+{
+    int error = mkfifo(NAMED_PIPE, 0666);
+    if (error != 0)
+    {
+        print_error(FILE_NAME, "create_named_pipe: mkfifo", errno);
+    }
+    
 }
 
 void create_workers()

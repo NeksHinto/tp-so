@@ -15,4 +15,6 @@
 #define BUFFER_SIZE 256
 #define FILE_NAME "worker.c"
 
+#define NAMED_PIPE "defensa"
+
 #endif

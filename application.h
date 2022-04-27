@@ -29,6 +29,8 @@
 #define SEPARATOR "--------------------------------------------------\n"
 #define FILE_NAME "application.c"
 
+#define NAMED_PIPE "defensa"
+
 int fd_works[PROCESSES_COUNT][2];   // PIPE from application to worker
 int fd_results[PROCESSES_COUNT][2]; // PIPE from worker to application
 int flags_fd_work_open[PROCESSES_COUNT];
@@ -52,5 +54,7 @@ void create_workers();
 void concat_files(int files_count, const char *files[], char str[]);
 
 void initialize_fd_set(int *nfds, fd_set *fd_workers);
+
+void create_named_pipe();
 
 #endif

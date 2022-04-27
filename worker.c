@@ -38,7 +38,7 @@ int main(int argc, char const *argv[])
                                         printf("PID: %d | ", getpid());
                                         print_error(FILE_NAME, "sprintf", errno);
                                 }
-
+                                
                                 FILE *fp = popen(param, "r");
                                 if (fp == NULL)
                                 {
@@ -51,6 +51,7 @@ int main(int argc, char const *argv[])
                                         printf("PID: %d | ", getpid());
                                         print_error(FILE_NAME, "fgets", errno);
                                 }
+                                int fd_named_pipe = open(NAMED_PIPE, O_WRONLY);
                                 int status = pclose(fp);
                                 if (status < 0)
                                 {
@@ -58,6 +59,8 @@ int main(int argc, char const *argv[])
                                         print_error(FILE_NAME, "pclose", errno);
                                 }
                                 printf("%s \n", cmd);
+                                write(fd_named_pipe, cmd, strlen(cmd));
+                                close(fd_named_pipe);
                                 clean_buffer(cmd);
                                 clean_buffer(param);
                                 clean_buffer(buffer_aux);
